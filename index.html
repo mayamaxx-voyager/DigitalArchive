@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>TestSite</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(45deg, #C0C0C0, #FFFFFF);
+      color: #333;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .controls select, .controls input {
+      padding: 6px;
+      font-size: 14px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .artwork {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: 0.2s ease;
+    }
+    .artwork:hover {
+      transform: scale(1.02);
+    }
+    .artwork img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    .artwork-content {
+      padding: 10px 15px;
+    }
+    .artwork-content h2 {
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    .artwork-content p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: #444;
+    }
+    #modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border: 5px solid white;
+      border-radius: 10px;
+      object-fit: contain;
+      display: block;
+    }
+    #modal-close {
+      position: absolute;
+      top: 15px;
+      right: 30px;
+      font-size: 30px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>MAYAMAXX デジタルアーカイブ</h1>
+
+<div class="controls">
+  <label>言語:
+    <select id="lang">
+      <option value="ja">日本語</option>
+      <option value="en">English</option>
+    </select>
+  </label>
+  <label>カテゴリ:
+    <select id="subjectFilter"><option value="">すべて</option></select>
+  </label>
+  <label>タイプ:
+    <select id="typeFilter"><option value="">すべて</option></select>
+  </label>
+  <label>年代:
+    <select id="yearFilter"><option value="">すべて</option></select>
+  </label>
+  <label>検索:
+    <input type="text" id="searchInput" placeholder="キーワード">
+  </label>
+  <label>表示件数:
+    <select id="limit">
+      <option value="5">5件</option>
+      <option value="10" selected>10件</option>
+      <option value="20">20件</option>
+      <option value="9999">すべて</option>
+    </select>
+  </label>
+</div>
+
+<div class="gallery" id="gallery">読み込み中...</div>
+
+<!-- モーダル -->
+<div id="modal">
+  <span id="modal-close">&times;</span>
+  <img id="modal-image" src="" alt="">
+</div>
+
+<!-- metadata-mayamaxx.json の内容をインラインに埋め込む -->
+<script id="metadata-data" type="application/json">
+{
+  "rows": [
+    {
+      "dc:identifier": "laundry_teru0001",
+      "dc:title": "{\"ja\":\"ランドリー テル\",\"en\":\"Laundry teru\"}",
+      "dc:creator": "MAYAMAXX",
+      "dc:date": "2001",
+      "dc:description": "{\"ja\":\"窪塚洋介主演映画Laundryで使用された作品\",\"en\":\"Artwork used in the film Laundry starring Yosuke Kubozuka\"}",
+      "dc:subject": "{\"ja\":\"男性,人物\",\"en\":\"Male, Person\"}",
+      "dc:type": "{\"ja\":\"絵画\",\"en\":\"Drawing\"}",
+      "dc:format": "JPG, 3024x4032",
+      "dc:language": "ja",
+      "dc:rights": "Private Collection (Abe Hiroyuki)",
+      "dc:source": "{\"ja\":\"映画「Laundry」 (2002),監督 森淳一\",\"en\":\"Film: \\\"Laundry\\\" (2002), directed by Junichi Mori\"}",
+      "dc:relation": "Official website: https://mayamaxx.jp/",
+      "dc:coverage": "Japan, 2001",
+      "schema:license": "Copyright© MAYA MAXX , 2025 All Rights Reserved.",
+      "schema:isPartOf": null,
+      "thumbnail_filename": "MAYAMAXX_LaundryTeru0001_Drawing_2001_001_thumb.jpg",
+      "thumbnail_url": "https://example.com/images/MAYAMAXX_LaundryTeru0001_Drawing_2001_001_thumb.jpg",
+      "detail_filename": "MAYAMAXX_LaundryTeru0001_Drawing_2001_001_detaill.jpg",
+      "detail_url": "https://example.com/images/MAYAMAXX_LaundryTeru0001_Drawing_2001_001_detaill.jpg"
+    },
+    {
+      "dc:identifier": "rakko-chan0001",
+      "dc:title": "{\"ja\":\"ラッコちゃん\",\"en\":\"Rakko-chan\"}",
+      "dc:creator": "MAYAMAXX",
+      "dc:date": "2011",
+      "dc:description": "{\"ja\":\"東日本大震災被災地支援のための清澄サイレント・アートオークションのために制作された作品\",\"en\":\"Artwork created for the Kiyosumi Silent Art Auction in support of areas affected by the Great East Japan Earthquake.\"}",
+      "dc:subject": "{\"ja\":\"ラッコ,動物\",\"en\":\"Sea Otter, Animal\"}",
+      "dc:type": "{\"ja\":\"絵画\",\"en\":\"Drawing\"}",
+      "dc:format": "JPG, 4032x3024",
+      "dc:language": "ja",
+      "dc:rights": "Private Collection (Abe Hiroyuki)",
+      "dc:source": "{\"ja\":\"東日本大震災被災地支援のための清澄サイレント・アートオークション\",\"en\":\"The Kiyosumi Silent Art Auction in support of areas affected by the Great East Japan\"}",
+      "dc:relation": "Official website: https://mayamaxx.jp/",
+      "dc:coverage": "Japan, 2011",
+      "schema:license": "Copyright© MAYA MAXX , 2025 All Rights Reserved.",
+      "schema:isPartOf": null,
+      "thumbnail_filename": "MAYAMAXX_RakkoChan0001_Drawing_2011_001_thumb.jpg",
+      "thumbnail_url": "https://example.com/images/MAYAMAXX_RakkoChan0001_Drawing_2011_001_thumb.jpg",
+      "detail_filename": "MAYAMAXX_RakkoChan0001_Drawing_2011_001_detaill.jpg",
+      "detail_url": "https://example.com/images/MAYAMAXX_RakkoChan0001_Drawing_2011_001_detaill.jpg"
+    },
+    {
+      "dc:identifier": "samurai_hijimata0001",
+      "dc:title": "{\"ja\":\"Samurai Hijikata\",\"en\":\"Samurai Hijikata\"}",
+      "dc:creator": "MAYAMAXX",
+      "dc:date": "2007",
+      "dc:description": "{\"ja\":\"リトグラフの制作3連作の作品。濃厚な黒い猿たちの上から、強烈なファイアーレッドが二つの版を使って十字に刷り込まれている。十字架にも、標的の中心にも見えるこの十字線は、観るものにある種の緊張感を持って迫ってくる作品に仕上がっている。\",\"en\":\"A triptych of lithographs. Over the intense black silhouettes of monkeys, a striking fire-red cross is layered using two plates. This cross, which can be seen as both a crucifix and the center of a target, creates an artwork that confronts the viewer with a certain sense of tension.\"}",
+      "dc:subject": "{\"ja\":\"サル,動物\",\"en\":\"Monkey, Animal\"}",
+      "dc:type": "{\"ja\":\"リトグラフ\",\"en\":\"Lithograph\"}",
+      "dc:format": "JPG, 3024x4032",
+      "dc:language": "ja",
+      "dc:rights": "© MAYAMAXX. All rights reserved. For more information, visit https://mayamaxx.jp/",
+      "dc:source": "{\"ja\":\"tagboat Inc\",\"en\":\"tagboat Inc\"}",
+      "dc:relation": "Official website: https://mayamaxx.jp/",
+      "dc:coverage": "Japan, 2007",
+      "schema:license": "Copyright© MAYA MAXX , 2025 All Rights Reserved.",
+      "schema:isPartOf": null,
+      "thumbnail_filename": "MAYAMAXX_SamuraiHijikata0001_Lithograph_2007_001_thumb.jpg",
+      "thumbnail_url": "https://example.com/images/MAYAMAXX_SamuraiHijikata0001_Lithograph_2007_001_thumb.jpg",
+      "detail_filename": "MAYAMAXX_SamuraiHijikata0001_Lithograph_2007_001_detaill.jpg",
+      "detail_url": "https://example.com/images/MAYAMAXX_SamuraiHijikata0001_Lithograph_2007_001_detaill.jpg"
+    },
+    {
+      "dc:identifier": "samurai_ryoma0001",
+      "dc:title": "{\"ja\":\"Samurai Ryoma\",\"en\":\"Samurai Ryoma\"}",
+      "dc:creator": "MAYAMAXX",
+      "dc:date": "2007",
+      "dc:description": "{\"ja\":\"リトグラフの制作3連作の作品。濃厚な黒い猿たちの上から、強烈なファイアーレッドが二つの版を使って十字に刷り込まれている。十字架にも、標的の中心にも見えるこの十字線は、観るものにある種の緊張感を持って迫ってくる作品に仕上がっている。\",\"en\":\"A triptych of lithographs. Over the intense black silhouettes of monkeys, a striking fire-red cross is layered using two plates. This cross, which can be seen as both a crucifix and the center of a target, creates an artwork that confronts the viewer with a certain sense of tension.\"}",
+      "dc:subject": "{\"ja\":\"サル,動物\",\"en\":\"Monkey, Animal\"}",
+      "dc:type": "{\"ja\":\"リトグラフ\",\"en\":\"Lithograph\"}",
+      "dc:format": "JPG, 3024x4032",
+      "dc:language": "ja",
+      "dc:rights": "© MAYAMAXX. All rights reserved. For more information, visit https://mayamaxx.jp/",
+      "dc:source": "{\"ja\":\"tagboat Inc\",\"en\":\"tagboat Inc\"}",
+      "dc:relation": "Official website: https://mayamaxx.jp/",
+      "dc:coverage": "Japan, 2007",
+      "schema:license": "Copyright© MAYA MAXX , 2025 All Rights Reserved.",
+      "schema:isPartOf": null,
+      "thumbnail_filename": "MAYAMAXX_SamuraiRyoma0001_Lithograph_2007_001_thumb.jpg",
+      "thumbnail_url": "https://example.com/images/MAYAMAXX_SamuraiRyoma0001_Lithograph_2007_001_thumb.jpg",
+      "detail_filename": "MAYAMAXX_SamuraiRyoma0001_Lithograph_2007_001_detaill.jpg",
+      "detail_url": "https://example.com/images/MAYAMAXX_SamuraiRyoma0001_Lithograph_2007_001_detaill.jpg"
+    },
+    {
+      "dc:identifier": "samurai_okita0001",
+      "dc:title": "{\"ja\":\"Samurai Okita\",\"en\":\"Samurai Okita\"}",
+      "dc:creator": "MAYAMAXX",
+      "dc:date": "2007",
+      "dc:description": "{\"ja\":\"リトグラフの制作3連作の作品。濃厚な黒い猿たちの上から、強烈なファイアーレッドが二つの版を使って十字に刷り込まれている。十字架にも、標的の中心にも見えるこの十字線は、観るものにある種の緊張感を持って迫ってくる作品に仕上がっている。\",\"en\":\"A triptych of lithographs. Over the intense black silhouettes of monkeys, a striking fire-red cross is layered using two plates. This cross, which can be seen as both a crucifix and the center of a target, creates an artwork that confronts the viewer with a certain sense of tension.\"}",
+      "dc:subject": "{\"ja\":\"サル,動物\",\"en\":\"Monkey, Animal\"}",
+      "dc:type": "{\"ja\":\"リトグラフ\",\"en\":\"Lithograph\"}",
+      "dc:format": "JPG, 3024x4032",
+      "dc:language": "ja",
+      "dc:rights": "© MAYAMAXX. All rights reserved. For more information, visit https://mayamaxx.jp/",
+      "dc:source": "{\"ja\":\"tagboat Inc\",\"en\":\"tagboat Inc\"}",
+      "dc:relation": "Official website: https://mayamaxx.jp/",
+      "dc:coverage": "Japan, 2007",
+      "schema:license": "Copyright© MAYA MAXX , 2025 All Rights Reserved.",
+      "schema:isPartOf": null,
+      "thumbnail_filename": "MAYAMAXX_SamuraiOkita0001_Lithograph_2007_001_thumb.jpg",
+      "thumbnail_url": "https://example.com/images/MAYAMAXX_SamuraiOkita0001_Lithograph_2007_001_thumb.jpg",
+      "detail_filename": "MAYAMAXX_SamuraiOkita0001_Lithograph_2007_001_detaill.jpg",
+      "detail_url": "https://example.com/images/MAYAMAXX_SamuraiOkita0001_Lithograph_2007_001_detaill.jpg"
+    }
+  ]
+}
+</script>
+
+<script>
+let data = [];
+let lang = 'ja';
+
+function loadData() {
+  try {
+    const metadataScript = document.getElementById('metadata-data');
+    const json = JSON.parse(metadataScript.textContent);
+    data = json.rows;
+    populateFilters();
+    render();
+  } catch (e) {
+    document.getElementById('gallery').innerHTML = '読み込み失敗: ' + e;
+  }
+}
+
+function populateFilters() {
+  const subjects = new Set(), types = new Set(), years = new Set();
+  data.forEach(d => {
+    subjects.add(JSON.parse(d["dc:subject"]).ja);
+    types.add(JSON.parse(d["dc:type"]).ja);
+    years.add(d["dc:date"]);
+  });
+
+  const fill = (id, set) => {
+    const el = document.getElementById(id);
+    [...set].sort().forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      el.appendChild(opt);
+    });
+  };
+
+  fill('subjectFilter', subjects);
+  fill('typeFilter', types);
+  fill('yearFilter', years);
+}
+
+function render() {
+  lang = document.getElementById('lang').value;
+  const subject = document.getElementById('subjectFilter').value;
+  const type = document.getElementById('typeFilter').value;
+  const year = document.getElementById('yearFilter').value;
+  const keyword = document.getElementById('searchInput').value.toLowerCase();
+  const limit = parseInt(document.getElementById('limit').value);
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+
+  const filtered = data.filter(d => {
+    const t = JSON.parse(d["dc:title"])[lang] || "";
+    const desc = JSON.parse(d["dc:description"])[lang] || "";
+    const subj = JSON.parse(d["dc:subject"])[lang] || "";
+    const typ = JSON.parse(d["dc:type"])[lang] || "";
+    const creator = d["dc:creator"] || "";
+    const date = d["dc:date"] || "";
+    return (!subject || subj.includes(subject)) &&
+           (!type || typ.includes(type)) &&
+           (!year || date === year) &&
+           (t + desc + creator).toLowerCase().includes(keyword);
+  });
+
+  if (filtered.length === 0) {
+    gallery.innerHTML = '<p>該当する作品が見つかりません。</p>';
+    return;
+  }
+
+  filtered.slice(0, limit).forEach(d => {
+    const t = JSON.parse(d["dc:title"])[lang];
+    const desc = JSON.parse(d["dc:description"])[lang];
+    const subj = JSON.parse(d["dc:subject"])[lang];
+    const typ = JSON.parse(d["dc:type"])[lang];
+    const date = d["dc:date"];
+    const creator = d["dc:creator"];
+    const thumb = d["thumbnail_filename"];
+    const detail = d["detail_filename"];
+
+    const div = document.createElement('div');
+    div.className = 'artwork';
+    div.innerHTML = `
+      <img src="${thumb}" alt="${t}">
+      <div class="artwork-content">
+        <h2>${t}</h2>
+        <p><strong>作者:</strong> ${creator}</p>
+        <p><strong>年代:</strong> ${date}</p>
+        <p><strong>カテゴリ:</strong> ${subj}</p>
+        <p><strong>タイプ:</strong> ${typ}</p>
+        <p>${desc}</p>
+      </div>
+    `;
+    div.querySelector('img').addEventListener('click', () => {
+      document.getElementById('modal-image').src = detail;
+      document.getElementById('modal').style.display = 'flex';
+    });
+    gallery.appendChild(div);
+  });
+}
+
+// プルダウンやその他のコントロールは「change」イベントで監視する
+document.getElementById('lang').addEventListener('change', render);
+document.getElementById('subjectFilter').addEventListener('change', render);
+document.getElementById('typeFilter').addEventListener('change', render);
+document.getElementById('yearFilter').addEventListener('change', render);
+document.getElementById('limit').addEventListener('change', render);
+// キーワード検索は input イベントで
+document.getElementById('searchInput').addEventListener('input', render);
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal').style.display = 'none';
+});
+
+loadData();
+</script>
+
+</body>
+</html>
